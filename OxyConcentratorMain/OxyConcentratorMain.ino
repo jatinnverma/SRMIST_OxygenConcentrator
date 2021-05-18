@@ -1,3 +1,8 @@
+#include <Adafruit_ADS1X15.h>
+Adafruit_ADS1115 ads;  /* Use this for the 16-bit version */
+float mv;
+float per;
+
 // RELAY PIN ASSIGNMENT
 //**************************************************************************
 int Sieve_A_Valve = 5; //Defined Pin as Variable
@@ -22,8 +27,8 @@ void setup()
   //**************************************************************************
   // Serial Port initialization
   Serial.begin(9600);
-
-
+  ads.begin();
+  Serial.println("ADC Active. . . .Program Starting.");
   // SET PIN MODE FOR PINS IN PROGRAM
   //**************************************************************************
   pinMode(Sieve_A_Valve, OUTPUT);
@@ -72,6 +77,12 @@ void setup()
 
 void loop()
 {
+  int16_t results;
+  float multiplier = 0.1875F; /* ADS1115  @ +/- 6.144V gain (16-bit results) */
+  results = ads.readADC_Differential_0_1();  
+  mv = results * multiplier;
+  per=map(mv,12,70,21,100);
+  Serial.print("Voltage: "); Serial.print(mv); Serial.print("mv  ("); Serial.print(per); Serial.println("%)");
 
   //CYCLE 1
   //**************************************************************************
@@ -80,6 +91,11 @@ void loop()
   digitalWrite(Sieve_B_Valve, LOW);
   digitalWrite(PreCharge_Valve, LOW);
   delay(Production_Delay);
+  
+  results = ads.readADC_Differential_0_1();  
+  mv = results * multiplier;
+  per=map(mv,12,70,21,100);
+  Serial.print("Voltage: "); Serial.print(mv); Serial.print("mv  ("); Serial.print(per); Serial.println("%)");
 
 
   //CYCLE 2
@@ -89,7 +105,7 @@ void loop()
   digitalWrite(Sieve_B_Valve, LOW);
   digitalWrite(PreCharge_Valve, HIGH);
   delay(Flush_Delay) ;
-
+ 
 
   //CYCLE 3
   //**************************************************************************
@@ -98,7 +114,8 @@ void loop()
   digitalWrite(Sieve_B_Valve, HIGH);
   digitalWrite(PreCharge_Valve, HIGH);
   delay(PreCharge_Delay);
-
+  
+  
   //CYCLE 4
   //**************************************************************************
   Serial.println("Sieve A Purge / Sieve B Charge");
@@ -106,6 +123,11 @@ void loop()
   digitalWrite(Sieve_B_Valve, HIGH);
   digitalWrite(PreCharge_Valve, LOW);
   delay(Production_Delay);
+
+  results = ads.readADC_Differential_0_1();  
+  mv = results * multiplier;
+  per=map(mv,12,70,21,100);
+  Serial.print("Voltage: "); Serial.print(mv); Serial.print("mv  ("); Serial.print(per); Serial.println("%)");
 
   //CYCLE 5
   //**************************************************************************
